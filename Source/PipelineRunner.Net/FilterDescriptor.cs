@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace PipelineRunner.Net
@@ -8,6 +9,7 @@ namespace PipelineRunner.Net
         public readonly Type? FilterType;
         public readonly IFilter? FilterInstance;
         public readonly Func<Type, IFilter>? Factory;
+        private readonly Dictionary<Type, bool> _compatibilityCache = new Dictionary<Type, bool>();
 
         public FilterDescriptor(Type filerType, Func<Type, IFilter> factory)
         {
@@ -19,7 +21,7 @@ namespace PipelineRunner.Net
         public FilterDescriptor(IFilter instance)
         {
             FilterInstance = instance;
-            FilterType = null;
+            FilterType = instance.GetType();
             Factory = null;
         }
 
@@ -28,30 +30,36 @@ namespace PipelineRunner.Net
             if (FilterInstance is IFilter<TContext> typedFilter)
             {
                 filter = typedFilter;
-
                 return true;
             }
 
-            if (Factory != null && FilterType != null)
+            if (Factory != null && FilterType != null && IsCompatible<TContext>())
             {
-                var filterInterfaceType = typeof(IFilter<TContext>);
+                var basicFilter = Factory(FilterType);
 
-                if (filterInterfaceType.IsAssignableFrom(FilterType))
+                if (basicFilter is IFilter<TContext> typed)
                 {
-                    var basicFilter = Factory(FilterType);
-
-                    if (basicFilter is IFilter<TContext> typed)
-                    {
-                        filter = typed;
-
-                        return true;
-                    }
+                    filter = typed;
+                    return true;
                 }
             }
 
             filter = null;
-
             return false;
+        }
+
+        private bool IsCompatible<TContext>() where TContext : class, IPipelineContext
+        {
+            var contextType = typeof(TContext);
+
+            if (!_compatibilityCache.TryGetValue(contextType, out var isCompatible))
+            {
+                var filterInterfaceType = typeof(IFilter<TContext>);
+                isCompatible = filterInterfaceType.IsAssignableFrom(FilterType);
+                _compatibilityCache[contextType] = isCompatible;
+            }
+
+            return isCompatible;
         }
     }
 }

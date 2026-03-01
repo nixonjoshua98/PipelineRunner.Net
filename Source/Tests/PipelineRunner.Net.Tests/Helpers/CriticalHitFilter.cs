@@ -1,5 +1,3 @@
-using System.Threading.Tasks;
-
 namespace PipelineRunner.Net.Tests.Helpers
 {
     internal sealed class CriticalHitFilter : IFilter<AttackContext>

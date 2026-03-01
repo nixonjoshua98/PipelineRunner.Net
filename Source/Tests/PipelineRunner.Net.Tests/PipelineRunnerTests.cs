@@ -78,8 +78,8 @@ namespace PipelineRunner.Net.Tests
         public async Task GamePipelineExample()
         {
             var gamePipeline = new PipelineBuilder()
-                .AddFilter<CriticalHitFilter>()    
-                .AddFilter<BlockFilter>()   
+                .AddFilter<CriticalHitFilter>()
+                .AddFilter<BlockFilter>()
                 .Build();
 
             var attack = new AttackContext { Damage = 100, IsCritical = true };
@@ -88,11 +88,11 @@ namespace PipelineRunner.Net.Tests
 
             var defend = new DefendContext { Defense = 50, IsBlocked = true };
             await gamePipeline.ExecuteAsync(defend);
-            Assert.Equal(100, defend.Defense); 
+            Assert.Equal(100, defend.Defense);
 
             var normalAttack = new AttackContext { Damage = 100, IsCritical = false };
             await gamePipeline.ExecuteAsync(normalAttack);
-            Assert.Equal(100, normalAttack.Damage); 
+            Assert.Equal(100, normalAttack.Damage);
         }
     }
 }
