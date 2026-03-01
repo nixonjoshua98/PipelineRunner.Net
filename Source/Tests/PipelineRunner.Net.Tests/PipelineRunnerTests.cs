@@ -21,6 +21,24 @@ namespace PipelineRunner.Net.Tests
         }
 
         [Fact]
+        public async Task FiltersShouldExecute()
+        {
+            var numericContext = new NumericPipelineContext();
+
+            IPipelineContext context = numericContext;
+
+            var runner = new PipelineBuilder()
+                .AddFilter(MultiplyByTwoFilter.Instance)
+                .AddFilter(new MultiplyByTwoFilter())
+                .AddFilter<MultiplyByTwoFilter>()
+                .Build();
+
+            await runner.ExecuteAsync(context);
+
+            Assert.Equal(8, numericContext.Value);
+        }
+
+        [Fact]
         public async Task FiltersShouldExecuteInOrder()
         {
             var context = new NumericPipelineContext();

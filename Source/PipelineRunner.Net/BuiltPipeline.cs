@@ -11,17 +11,17 @@ namespace PipelineRunner.Net
 
         public BuiltPipeline(List<FilterDescriptor> descriptors)
         {
-            _descriptors = descriptors.ToArray();
+            _descriptors = descriptors.ToArray(); // Copy
         }
 
         public async Task ExecuteAsync<TContext>(TContext context) where TContext : class, IPipelineContext
         {
-            var pipeline = GetOrCreatePipeline<TContext>();
+            var pipeline = GetOrCreatePipeline(context);
 
             await pipeline(context);
         }
 
-        private PipelineDelegate<TContext> GetOrCreatePipeline<TContext>() where TContext : class, IPipelineContext
+        private PipelineDelegate<TContext> GetOrCreatePipeline<TContext>(TContext context) where TContext : class, IPipelineContext
         {
             var contextType = typeof(TContext);
 
@@ -30,20 +30,22 @@ namespace PipelineRunner.Net
                 return (PipelineDelegate<TContext>)cacheEntry.Delegate;
             }
 
-            var pipeline = BuildPipeline<TContext>();
+            var pipeline = BuildPipeline(context);
 
             _pipelines[contextType] = new CachedPipeline(pipeline);
 
             return pipeline;
         }
 
-        private PipelineDelegate<TContext> BuildPipeline<TContext>() where TContext : class, IPipelineContext
+        private PipelineDelegate<TContext> BuildPipeline<TContext>(TContext context) where TContext : class, IPipelineContext
         {
+            var contextType = context.GetType();
+
             PipelineDelegate<TContext> pipeline = _ => Task.CompletedTask;
 
             for (int i = _descriptors.Length - 1; i >= 0; i--)
             {
-                if (_descriptors[i].TryGetFilter<TContext>(out var filter))
+                if (_descriptors[i].TryGetFilter<TContext>(contextType, out var filter))
                 {
                     var next = pipeline;
                     pipeline = context => filter.ExecuteAsync(context, next);

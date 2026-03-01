@@ -10,4 +10,8 @@
 		<Description>Minimal builder and runner for a modular middleware pipeline</Description>
 	</PropertyGroup>
 
+	<ItemGroup>
+		<PackageReference Include="System.Runtime.CompilerServices.Unsafe" />
+	</ItemGroup>
+
 </Project>
