@@ -5,48 +5,46 @@ using System.Threading.Tasks;
 
 namespace PipelineRunner.Net
 {
-    public sealed partial class PipelineBuilder
+    internal sealed class BuiltPipeline : IBuiltPipeline
     {
-        private sealed class BuiltPipeline : IBuiltPipeline
+        private readonly List<FilterDescriptor> _descriptors;
+        private readonly Dictionary<Type, object> _pipelines = new Dictionary<Type, object>();
+
+        public BuiltPipeline(List<FilterDescriptor> descriptors)
         {
-            private readonly List<FilterDescriptor> _descriptors;
-            private readonly Dictionary<Type, object> _pipelines = new Dictionary<Type, object>();
+            _descriptors = descriptors;
+        }
 
-            public BuiltPipeline(List<FilterDescriptor> descriptors)
+        public async Task ExecuteAsync<TContext>(TContext context) where TContext : class, IPipelineContext
+        {
+            var contextType = typeof(TContext);
+
+            if (!_pipelines.TryGetValue(contextType, out var cachedPipeline))
             {
-                _descriptors = descriptors;
+                cachedPipeline = BuildPipeline<TContext>();
+
+                _pipelines[contextType] = cachedPipeline;
             }
 
-            public Task ExecuteAsync<TContext>(TContext context) where TContext : class, IPipelineContext
-            {
-                var contextType = typeof(TContext);
+            var pipeline = (PipelineDelegate<TContext>)cachedPipeline;
 
-                if (!_pipelines.TryGetValue(contextType, out var cachedPipeline))
+            await pipeline(context);
+        }
+
+        private PipelineDelegate<TContext> BuildPipeline<TContext>() where TContext : class, IPipelineContext
+        {
+            PipelineDelegate<TContext> pipeline = _ => Task.CompletedTask;
+
+            foreach (var descriptor in _descriptors.AsEnumerable().Reverse())
+            {
+                if (descriptor.TryGetFilter<TContext>(out var filter))
                 {
-                    cachedPipeline = BuildPipeline<TContext>();
-                    _pipelines[contextType] = cachedPipeline;
+                    var next = pipeline;
+                    pipeline = context => filter.ExecuteAsync(context, next);
                 }
-
-                var pipeline = (PipelineDelegate<TContext>)cachedPipeline;
-
-                return pipeline(context);
             }
 
-            private PipelineDelegate<TContext> BuildPipeline<TContext>() where TContext : class, IPipelineContext
-            {
-                PipelineDelegate<TContext> pipeline = _ => Task.CompletedTask;
-
-                foreach (var descriptor in _descriptors.AsEnumerable().Reverse())
-                {
-                    if (descriptor.TryGetFilter<TContext>(out var filter))
-                    {
-                        var next = pipeline;
-                        pipeline = context => filter.ExecuteAsync(context, next);
-                    }
-                }
-
-                return pipeline;
-            }
+            return pipeline;
         }
     }
 }

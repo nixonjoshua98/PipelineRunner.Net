@@ -8,6 +8,10 @@
     <File Path="Tests/Directory.Packages.props" />
     <Project Path="Tests/PipelineRunner.Net.Tests/PipelineRunner.Net.Tests.csproj" />
   </Folder>
+  <Folder Name="/Tests/Props/">
+    <File Path="Tests/Directory.Build.props" />
+    <File Path="Tests/Directory.Packages.props" />
+  </Folder>
   <Folder Name="/Workflows/">
     <File Path="../.github/workflows/PublishNuget.yaml" />
     <File Path="../.github/workflows/RunTests.yaml" />

@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace PipelineRunner.Net
 {
-    public sealed partial class PipelineBuilder
+    public sealed class PipelineBuilder
     {
         private readonly List<FilterDescriptor> _descriptors = new List<FilterDescriptor>();
 
