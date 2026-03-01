@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/Props/">
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <File Path="Tests/Directory.Build.props" />
+    <File Path="Tests/Directory.Packages.props" />
+    <Project Path="Tests/PipelineRunner.Net.Tests/PipelineRunner.Net.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Workflows/">
+    <File Path="../.github/workflows/PublishNuget.yaml" />
+    <File Path="../.github/workflows/RunTests.yaml" />
+  </Folder>
+  <Project Path="PipelineRunner.Net/PipelineRunner.Net.csproj" Id="53ab5ee8-6b04-43e7-b937-e0b1a12e55ce" />
+</Solution>
