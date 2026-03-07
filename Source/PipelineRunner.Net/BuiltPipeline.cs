@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -7,7 +8,7 @@ namespace PipelineRunner.Net
     internal sealed partial class BuiltPipeline : IBuiltPipeline
     {
         private readonly FilterDescriptor[] _descriptors;
-        private readonly Dictionary<Type, CachedPipeline> _pipelines = new Dictionary<Type, CachedPipeline>();
+        private readonly ConcurrentDictionary<Type, CachedPipeline> _pipelines = new ConcurrentDictionary<Type, CachedPipeline>();
 
         public BuiltPipeline(List<FilterDescriptor> descriptors)
         {
@@ -25,16 +26,16 @@ namespace PipelineRunner.Net
         {
             var contextType = typeof(TContext);
 
-            if (_pipelines.TryGetValue(contextType, out var cacheEntry))
-            {
-                return (PipelineDelegate<TContext>)cacheEntry.Delegate;
-            }
+            var value = _pipelines.GetOrAdd(
+                contextType,
+                _ =>
+                {
+                    var pipeline = BuildPipeline(context);
 
-            var pipeline = BuildPipeline(context);
+                    return new CachedPipeline(pipeline);
+                });
 
-            _pipelines[contextType] = new CachedPipeline(pipeline);
-
-            return pipeline;
+            return (PipelineDelegate<TContext>)value.Delegate;
         }
 
         private PipelineDelegate<TContext> BuildPipeline<TContext>(TContext context) where TContext : class, IPipelineContext
