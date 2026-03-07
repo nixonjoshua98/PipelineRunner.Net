@@ -24,7 +24,7 @@ namespace PipelineRunner.Net
 
         private PipelineDelegate<TContext> GetOrCreatePipeline<TContext>(TContext context) where TContext : class, IPipelineContext
         {
-            var contextType = typeof(TContext);
+            var contextType = context.GetType();
 
             var value = _pipelines.GetOrAdd(
                 contextType,

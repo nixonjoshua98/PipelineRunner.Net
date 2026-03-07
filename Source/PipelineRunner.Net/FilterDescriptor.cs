@@ -25,9 +25,7 @@ namespace PipelineRunner.Net
             Factory = null;
         }
 
-        public bool TryGetFilter<TContext>(
-            Type runtimeContextType,
-            [NotNullWhen(true)] out IFilter<TContext>? filter)
+        public bool TryGetFilter<TContext>(Type runtimeContextType, [NotNullWhen(true)] out IFilter<TContext>? filter)
             where TContext : class, IPipelineContext
         {
             if (FilterInstance is IFilter<TContext> typedFilter)
