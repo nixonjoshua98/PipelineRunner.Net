@@ -11,12 +11,14 @@ namespace PipelineRunner.Net
 
         public FilterWrapper(IFilter<TActual> inner) => _inner = inner;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Task ExecuteAsync(TContext context, PipelineDelegate<TContext> next)
         {
             var typedContext = Unsafe.As<TActual>(context);
             return _inner.ExecuteAsync(typedContext, WrapNext(next));
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static PipelineDelegate<TActual> WrapNext(PipelineDelegate<TContext> next)
         {
             return actualContext => next(actualContext);
