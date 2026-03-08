@@ -12,7 +12,7 @@ namespace PipelineRunner.Net.Tests
             var runner = new PipelineBuilder()
                 .AddFilter(MultiplyByTwoFilter.Instance)
                 .AddFilter(new MultiplyByTwoFilter())
-                .AddFilter<MultiplyByTwoFilter>()
+                .AddFilter<MultiplyByTwoFilter>(_ => new MultiplyByTwoFilter())
                 .Build();
 
             await runner.ExecuteAsync(context);

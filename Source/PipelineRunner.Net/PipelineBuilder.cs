@@ -7,11 +7,6 @@ namespace PipelineRunner.Net
     {
         private readonly List<FilterDescriptor> _descriptors = new List<FilterDescriptor>();
 
-        public void Clear()
-        {
-            _descriptors.Clear();
-        }
-
         public PipelineBuilder AddFilter<TFilter>(TFilter filter) where TFilter : IFilter
         {
             _descriptors.Add(new FilterDescriptor(filter));
@@ -24,7 +19,7 @@ namespace PipelineRunner.Net
             return this;
         }
 
-        public PipelineBuilder AddFilter<TFilter>(Func<Type, IFilter> factory) where TFilter : IFilter, new()
+        public PipelineBuilder AddFilter<TFilter>(Func<Type, IFilter> factory) where TFilter : IFilter
         {
             _descriptors.Add(new FilterDescriptor(typeof(TFilter), factory));
             return this;
