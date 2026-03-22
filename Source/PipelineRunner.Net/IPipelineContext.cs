@@ -10,7 +10,7 @@ namespace PipelineRunner.Net
     public interface IRecursivePipelineContext : IPipelineContext
     {
         IEnumerable<IPipelineContext> Children { get; }
-        
-        void EnqueueContext<TContext>(TContext context) where TContext : IPipelineContext;
+
+        void Enqueue(IPipelineContext context);
     }
 }
