@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace PipelineRunner.Net
 {
-    internal sealed partial class BuiltPipeline : IBuiltPipeline
+    internal sealed class BuiltPipeline : IBuiltPipeline
     {
         private readonly FilterDescriptor[] _descriptors;
         private readonly ConcurrentDictionary<Type, CachedPipeline> _pipelines = new ConcurrentDictionary<Type, CachedPipeline>();
@@ -20,6 +20,14 @@ namespace PipelineRunner.Net
             var pipeline = GetOrCreatePipeline(context);
 
             await pipeline(context);
+
+            if (context is IRecursivePipelineContext recursive)
+            {
+                foreach (var child in recursive.Children)
+                {
+                    await ExecuteAsync(child);
+                }
+            }
         }
 
         private PipelineDelegate<TContext> GetOrCreatePipeline<TContext>(TContext context) where TContext : class, IPipelineContext
@@ -44,13 +52,12 @@ namespace PipelineRunner.Net
 
             PipelineDelegate<TContext> pipeline = _ => Task.CompletedTask;
 
-            for (int i = _descriptors.Length - 1; i >= 0; i--)
+            for (var i = _descriptors.Length - 1; i >= 0; i--)
             {
-                if (_descriptors[i].TryGetFilter<TContext>(contextType, out var filter))
-                {
-                    var next = pipeline;
-                    pipeline = context => filter.ExecuteAsync(context, next);
-                }
+                if (!_descriptors[i].TryGetFilter<TContext>(contextType, out var filter)) continue;
+                
+                var next = pipeline;
+                pipeline = context => filter.ExecuteAsync(context, next);
             }
 
             return pipeline;
