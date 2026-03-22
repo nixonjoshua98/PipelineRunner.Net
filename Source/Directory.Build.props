@@ -15,7 +15,7 @@
 		<RepositoryUrl>https://github.com/nixonjoshua98/PipelineRunner.Net</RepositoryUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
-		<Version>0.3.0</Version>
+		<Version>0.4.0</Version>
 	</PropertyGroup>
 
 	<ItemGroup>
